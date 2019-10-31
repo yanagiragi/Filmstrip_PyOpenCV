@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 cutframe = 1
 
 data = { 'frame_info' : [] }
-	
+
 def calcPixelErr(frame, start_x, start_y, end_x, end_y, channel=3) :
 	pixelerr = 0
 	for x in range (start_x, end_x):
@@ -30,7 +30,7 @@ def calcHistPixelErr(frame, lastframe):
 	p_hist, p_bins = np.histogram(p_gray.flatten(), 256, [0,256])
 
 	res = hist - p_hist
-	
+
 	for i in range(0, len(res)):
 		pixelerr += abs(res[i])
 
@@ -40,7 +40,7 @@ def calcHistPixelErr(frame, lastframe):
 # Draw a RGB histogram of a single frame
 #
 def drawHist(frame):
-	
+
 	hist, bins = np.histogram(frame.flatten(), 256, [0,256])
 	cdf = hist.cumsum()
    	cdf_normalized = cdf * hist.max()/ cdf.max()
@@ -52,13 +52,13 @@ def drawHist(frame):
    	plt.show()
 
 def grabFrameData(source):
-	
+
 	lastframe = None
 	nowFrameCount = 0
 
 	cap = cv2.VideoCapture(source)
 	width, height, fps , totalFrame= int(cap.get(3)), int(cap.get(4)), int(cap.get(5)), int(cap.get(6))
-	
+
 	#cv2.namedWindow('pre-frame')
 	#cv2.moveWindow('pre-frame', 10, 10)
 	#cv2.namedWindow('frame')
@@ -71,31 +71,31 @@ def grabFrameData(source):
 
 		if nowFrameCount == totalFrame - 1 or not ret:
 			break
-		
+
 		elif nowFrameCount is 1:
 			lastframe = frame
 			lastStoreframe = lastframe
 
 		elif nowFrameCount % fps == 0:
-	
+
 			pixelerr = calcHistPixelErr(frame, lastframe)
 
 			data['frame_info'].append({
 				'frame' : nowFrameCount,
 				'diff' : pixelerr
 				})
-			
+
 			#print 'nowFrameCount = ' + str(nowFrameCount) + ', pixelerr = ' + str(pixelerr)
 
 			#if(pixelerr > minimum) :
 			#	cv2.imwrite('output/' + str(nowFrameCount) + '_1.jpg', lastframe);
 			#	lastStoreframe = lastframe
-				
+
 			lastframe = frame
 
 		#cv2.imshow('pre-frame', lastStoreframe)
 		cv2.imshow('frame', frame)
-			
+
 		k = cv2.waitKey(fps) & 0xFF		
 		if(k == ord('q')):
 			break
@@ -104,7 +104,7 @@ def grabFrameData(source):
 	cv2.destroyAllWindows()
 
 	diff_counts = [frameDataDiff['diff'] for frameDataDiff in data['frame_info']]
-	
+
 	data['stats'] = {
         'num': len(diff_counts),
         'min': np.min(diff_counts),
@@ -129,4 +129,4 @@ if __name__ == "__main__":
 		cap.set(1, f)
 		ret, frame = cap.read()
 		cv2.imwrite('output/frame' + str(f) + '.png', frame)
-	cap.release()
+	cap.release() 
